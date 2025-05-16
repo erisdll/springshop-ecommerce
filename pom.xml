@@ -10,13 +10,13 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>_SpringShop E-Commerce</name>
+    <name>SpringShop E-Commerce</name>
     <description>Monorepo for SpringShop E-Commerce microservices</description>
 
     <modules>
         <!-- Shared Modules -->
-        <module>common/commons-core</module>
-        <module>common/commons-security</module>
+        <module>common/common-domain</module>
+        <module>common/common-security</module>
 
         <!-- Microservices -->
         <module>services/gateway-service</module>

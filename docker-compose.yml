@@ -1,0 +1,196 @@
+services:
+
+  # =======================
+  # DATABASES & INFRA
+  # =======================
+
+  postgres:
+    image: postgres:17
+    container_name: springshop-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: springshop
+      POSTGRES_PASSWORD: springshop
+      POSTGRES_DB: springshop
+    ports:
+      - "5432:5432"
+    networks:
+      - springshop-network
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:8
+    container_name: springshop-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - springshop-network
+    volumes:
+      - mongodata:/data/db
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: springshop-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - springshop-network
+
+  redis:
+    image: redis:8
+    container_name: springshop-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - springshop-network
+    volumes:
+      - redisdata:/data
+
+  # =======================
+  # MICROSERVICES
+  # =======================
+
+  product-service:
+    build:
+      context: .
+      dockerfile: services/product-service/Dockerfile
+    container_name: springshop-product-service
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - springshop-network
+
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    container_name: springshop-order-service
+    ports:
+      - "8082:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DB_HOST=postgres
+    depends_on:
+      - postgres
+    networks:
+      - springshop-network
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    container_name: springshop-payment-service
+    ports:
+      - "8083:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DB_HOST=postgres
+    depends_on:
+      - postgres
+    networks:
+      - springshop-network
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: services/inventory-service/Dockerfile
+    container_name: springshop-inventory-service
+    ports:
+      - "8084:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DB_HOST=mongodb
+    depends_on:
+      - mongodb
+    networks:
+      - springshop-network
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    container_name: springshop-notification-service
+    ports:
+      - "8085:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - MQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+    networks:
+      - springshop-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    container_name: springshop-user-service
+    ports:
+      - "8086:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DB_HOST=postgres
+    depends_on:
+      - postgres
+    networks:
+      - springshop-network
+
+  # =======================
+  # API GATEWAY
+  # =======================
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/gateway-service/Dockerfile
+    container_name: springshop-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_CLIENT_ENABLED=false
+    depends_on:
+      - product-service
+      - order-service
+      - payment-service
+      - inventory-service
+      - notification-service
+      - user-service
+    networks:
+      - springshop-network
+
+#  # =======================
+#  # FRONTEND
+#  # =======================
+#
+#  frontend:
+#    build:
+#      context: ./frontend
+#      dockerfile: Dockerfile
+#    container_name: springshop-frontend
+#    ports:
+#      - "3000:3000"
+#    networks:
+#      - springshop-network
+#    depends_on:
+#      - api-gateway
+
+networks:
+  springshop-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+  mongodata:
+  redisdata:
