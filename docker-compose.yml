@@ -3,57 +3,115 @@ services:
   # =======================
   # DATABASES & INFRA
   # =======================
-
   postgres:
     image: postgres:17
     container_name: springshop-postgres
     restart: always
     environment:
       POSTGRES_USER: springshop
-      POSTGRES_PASSWORD: springshop
       POSTGRES_DB: springshop
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    secrets:
+      - postgres-password
     networks:
       - springshop-network
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "springshop" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mongodb:
     image: mongo:8
     container_name: springshop-mongo
     restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: springshop
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo-password
+    secrets:
+      - mongo-password
+    volumes:
+      - mongo-data:/data/db
     ports:
       - "27017:27017"
     networks:
       - springshop-network
-    volumes:
-      - mongodata:/data/db
+    healthcheck:
+      test:
+        [ "CMD-SHELL", "echo 'db.runCommand(\"ping\").ok' | mongo --quiet -u springshop -p $(cat /run/secrets/mongo-password) --authenticationDatabase admin" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:4-management
     container_name: springshop-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: springshop
+      RABBITMQ_DEFAULT_PASS: ./run/secrets/rabbitmq-password
+    secrets:
+      - rabbitmq-password
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5672:5672"      # AMQP
+      - "15672:15672"    # UI de gerenciamento
     networks:
       - springshop-network
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:8
     container_name: springshop-redis
     restart: always
+    command: [ "redis-server", "/run/secrets/redis.conf" ]
+    secrets:
+      - redis.conf
+    volumes:
+      - redis-data:/data
     ports:
       - "6379:6379"
     networks:
       - springshop-network
-    volumes:
-      - redisdata:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =======================
+  # GATEWAY
+  # =======================
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/gateway-service/Dockerfile
+    container_name: springshop-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_CLIENT_ENABLED=false
+    depends_on:
+      - product-service
+      - order-service
+      - payment-service
+      - inventory-service
+      - notification-service
+      - user-service
+    networks:
+      - springshop-network
 
   # =======================
   # MICROSERVICES
   # =======================
-
   product-service:
     build:
       context: .
@@ -146,38 +204,13 @@ services:
     networks:
       - springshop-network
 
-  # =======================
-  # API GATEWAY
-  # =======================
-
-  api-gateway:
-    build:
-      context: .
-      dockerfile: services/gateway-service/Dockerfile
-    container_name: springshop-api-gateway
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=dev
-      - EUREKA_CLIENT_ENABLED=false
-    depends_on:
-      - product-service
-      - order-service
-      - payment-service
-      - inventory-service
-      - notification-service
-      - user-service
-    networks:
-      - springshop-network
-
 #  # =======================
 #  # FRONTEND
 #  # =======================
-#
 #  frontend:
 #    build:
 #      context: ./frontend
-#      dockerfile: Dockerfile
+#      dockerfile:
 #    container_name: springshop-frontend
 #    ports:
 #      - "3000:3000"
@@ -191,6 +224,16 @@ networks:
     driver: bridge
 
 volumes:
-  pgdata:
-  mongodata:
-  redisdata:
+  postgres-data:
+  mongo-data:
+  redis-data:
+
+secrets:
+  postgres-password:
+    file: ./secrets/postgres-password.txt
+  mongo-password:
+    file: ./secrets/mongo-password.txt
+  redis.conf:
+    file: ./secrets/redis.conf
+  rabbitmq-password:
+    file: ./secrets/rabbitmq-password.txt
