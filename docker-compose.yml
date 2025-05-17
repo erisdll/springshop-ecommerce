@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
 
   # =======================
@@ -8,11 +10,9 @@ services:
     container_name: springshop-postgres
     restart: always
     environment:
-      POSTGRES_USER: springshop
-      POSTGRES_DB: springshop
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
-    secrets:
-      - postgres-password
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - springshop-network
     volumes:
@@ -20,7 +20,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "springshop" ]
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,10 +30,8 @@ services:
     container_name: springshop-mongo
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: springshop
-      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo-password
-    secrets:
-      - mongo-password
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - mongo-data:/data/db
     ports:
@@ -42,7 +40,10 @@ services:
       - springshop-network
     healthcheck:
       test:
-        [ "CMD-SHELL", "echo 'db.runCommand(\"ping\").ok' | mongo --quiet -u springshop -p $(cat /run/secrets/mongo-password) --authenticationDatabase admin" ]
+        [
+          "CMD-SHELL",
+          "echo 'db.runCommand(\"ping\").ok' | mongo --quiet -u ${MONGO_INITDB_ROOT_USERNAME} -p ${MONGO_INITDB_ROOT_PASSWORD} --authenticationDatabase admin"
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -52,13 +53,11 @@ services:
     container_name: springshop-rabbitmq
     restart: always
     environment:
-      RABBITMQ_DEFAULT_USER: springshop
-      RABBITMQ_DEFAULT_PASS: ./run/secrets/rabbitmq-password
-    secrets:
-      - rabbitmq-password
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     ports:
-      - "5672:5672"      # AMQP
-      - "15672:15672"    # UI de gerenciamento
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - springshop-network
     healthcheck:
@@ -71,9 +70,9 @@ services:
     image: redis:8
     container_name: springshop-redis
     restart: always
-    command: [ "redis-server", "/run/secrets/redis.conf" ]
-    secrets:
-      - redis.conf
+    command: [ "redis-server", "--requirepass", "${REDIS_PASSWORD}" ]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - redis-data:/data
     ports:
@@ -81,10 +80,33 @@ services:
     networks:
       - springshop-network
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  prometheus:
+    image: prom/prometheus:v3.4.0
+    container_name: springshop-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - springshop-network
+
+  grafana:
+    image: grafana/grafana:12.0.0
+    container_name: springshop-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    networks:
+      - springshop-network
+    depends_on:
+      - prometheus
 
   # =======================
   # GATEWAY
@@ -204,21 +226,6 @@ services:
     networks:
       - springshop-network
 
-#  # =======================
-#  # FRONTEND
-#  # =======================
-#  frontend:
-#    build:
-#      context: ./frontend
-#      dockerfile:
-#    container_name: springshop-frontend
-#    ports:
-#      - "3000:3000"
-#    networks:
-#      - springshop-network
-#    depends_on:
-#      - api-gateway
-
 networks:
   springshop-network:
     driver: bridge
@@ -227,13 +234,3 @@ volumes:
   postgres-data:
   mongo-data:
   redis-data:
-
-secrets:
-  postgres-password:
-    file: ./secrets/postgres-password.txt
-  mongo-password:
-    file: ./secrets/mongo-password.txt
-  redis.conf:
-    file: ./secrets/redis.conf
-  rabbitmq-password:
-    file: ./secrets/rabbitmq-password.txt
