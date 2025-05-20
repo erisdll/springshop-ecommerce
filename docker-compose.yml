@@ -122,7 +122,7 @@ services:
   api-gateway:
     build:
       context: .
-      dockerfile: services/gateway-service/Dockerfile
+      dockerfile: services/gateway-service/ApiGateway.product-service.Dockerfile
     container_name: springshop-api-gateway
     ports:
       - "8080:8080"
@@ -152,7 +152,7 @@ services:
   product-service:
     build:
       context: .
-      dockerfile: services/product-service/Dockerfile
+      dockerfile: ./services/product-service/Dockerfile
     container_name: springshop-product-service
     ports:
       - "8081:8080"
