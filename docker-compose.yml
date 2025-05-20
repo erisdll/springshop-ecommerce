@@ -129,6 +129,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - EUREKA_CLIENT_ENABLED=false
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     depends_on:
       - product-service
       - order-service
@@ -138,6 +140,11 @@ services:
       - user-service
     networks:
       - springshop-network
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # =======================
   # MICROSERVICES
