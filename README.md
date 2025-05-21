@@ -1,4 +1,4 @@
-# SpringShop Commerce
+# SpringShop eCommerce
 
 SpringShop Commerce é um projeto de estudo que simula uma plataforma de e-commerce desenvolvida com Java e Spring Boot. O objetivo é aplicar conceitos modernos de arquitetura de microsserviços, mensageria assíncrona, cache distribuído, observabilidade, pipelines de CI/CD, containerização e orquestração com Docker.
 
