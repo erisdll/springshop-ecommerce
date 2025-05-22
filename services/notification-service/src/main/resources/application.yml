@@ -1,10 +1,10 @@
 server:
-  port: ${SERVER_PORT:8085}
+  port: ${SERVER_PORT:8082}
 
 spring:
 
   application:
-    name: product-service
+    name: notification-service
 
   data:
     mongodb:
@@ -18,8 +18,11 @@ spring:
       password: ${REDIS_PASSWORD:}
       timeout: 60000
 
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE:default}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: springshop
+    password: ${RABBITMQ_PASSWORD:}
 
 management:
   endpoints:
@@ -37,7 +40,6 @@ management:
 logging:
   level:
     root: INFO
-    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
     com.erika.springshop: DEBUG
 
 springdoc:
