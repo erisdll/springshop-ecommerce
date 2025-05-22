@@ -1,9 +1,8 @@
 # ============== WARNING!! ============================ WARNING!! ============================ WARNING!! ===============
-# TO BE ABLE TO BUILD THIS IMAGE, YOU MUST DO IT FROM THE CONTEXT OF THE ROOT PROJECT
-# IF RUNNING IN INTELLJ IDEA, MAKE SURE EDIT THE RUN CONFIGURATION TO USE THE ROOT PROJECT AS CONTEXT
+# TO BE ABLE TO BUILD THIS IMAGE, YOU MUST SET THE ROOT OF THE MAIN PROJECT AS CONTEXT.
+# IF RUNNING FROM IDE, EDIT THE RUN CONFIGURATION TO SET THE ROOT OF THE MAIN PROJECT AS CONTEXT.
 # (i.e., the folder that contains the pom.xml file).
 # ============== WARNING!! ============================ WARNING!! ============================ WARNING!! ===============
-
 
 # == STAGE 1 - BUILD ===================================================================================================
 FROM maven:3-eclipse-temurin-21 AS builder

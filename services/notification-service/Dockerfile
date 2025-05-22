@@ -1,3 +1,9 @@
+# ============== WARNING!! ============================ WARNING!! ============================ WARNING!! ===============
+# TO BE ABLE TO BUILD THIS IMAGE, YOU MUST SET THE ROOT OF THE MAIN PROJECT AS CONTEXT.
+# IF RUNNING FROM IDE, EDIT THE RUN CONFIGURATION TO SET THE ROOT OF THE MAIN PROJECT AS CONTEXT.
+# (i.e., the folder that contains the pom.xml file).
+# ============== WARNING!! ============================ WARNING!! ============================ WARNING!! ===============
+
 # ===========================
 # STAGE 1 - BUILD
 # ===========================
