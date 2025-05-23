@@ -9,18 +9,20 @@ FROM maven:3-eclipse-temurin-21 AS builder
 
 WORKDIR /build
 
-# Copia o wrapper e configuração Maven
+#copia o mvnw da raiz do projeto
 COPY mvnw .
+#copia a pasta .mvn da raiz do projeto
 COPY .mvn .mvn
+#copia o pom.xml da raiz do projeto
 COPY pom.xml .
-COPY services/gateway-service/pom.xml services/gateway-service/pom.xml
+
+#copia o modulo
 COPY services/gateway-service services/gateway-service
 
 RUN chmod +x mvnw
 
 # Baixa dependências e compila usando o wrapper
-RUN mvn -f services/gateway-service/pom.xml dependency:go-offline
-RUN mvn -f services/gateway-service/pom.xml clean package -DskipTests
+RUN mvn -f services/gateway-service/pom.xml clean package -DskipTests dependency:go-offline
 
 # == STAGE 2 - RUNTIME =================================================================================================
 FROM eclipse-temurin:21-jdk-alpine
