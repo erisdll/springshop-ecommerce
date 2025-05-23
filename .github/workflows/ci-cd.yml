@@ -1,0 +1,101 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Springshop CI/CD
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      gateway: ${{ steps.filter.outputs.gateway }}
+      inventory: ${{ steps.filter.outputs.inventory }}
+      notification: ${{ steps.filter.outputs.notification }}
+      order: ${{ steps.filter.outputs.order }}
+      payment: ${{ steps.filter.outputs.payment }}
+      product: ${{ steps.filter.outputs.product }}
+      user: ${{ steps.filter.outputs.user }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Detect Changed Services
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            gateway:
+              - 'services/gateway-service/**'
+            inventory:
+              - 'services/inventory-service/**'
+            notification:
+              - 'services/notification-service/**'
+            order:
+              - 'services/order-service/**'
+            payment:
+              - 'services/payment-service/**'
+            product:
+              - 'services/product-service/**'
+            user:
+              - 'services/user-service/**'
+
+
+  build-gateway:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.gateway == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: gateway-service
+
+  build-inventory:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.inventory == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: inventory-service
+
+  build-notification:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.notification == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: notification-service
+
+  build-order:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.order == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: order-service
+
+  build-payment:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.payment == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: payment-service
+
+  build-product:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.product == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: product-service
+
+  build-user:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.user == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: user-service
