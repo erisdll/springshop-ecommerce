@@ -1,98 +1,140 @@
 # SpringShop eCommerce
 
-SpringShop Commerce é um projeto de estudo que simula uma plataforma de e-commerce desenvolvida com Java e Spring Boot. O objetivo é aplicar conceitos modernos de arquitetura de microsserviços, mensageria assíncrona, cache distribuído, observabilidade, pipelines de CI/CD, containerização e orquestração com Docker.
+**SpringShop eCommerce** é um projeto de estudo que simula uma plataforma moderna de e-commerce construída com **Java 17**, **Spring Boot** e **microsserviços**. O objetivo é aplicar práticas avançadas de engenharia de software, com foco em arquitetura distribuída, mensageria assíncrona, cache distribuído, observabilidade e pipelines de CI/CD, utilizando **Docker** e **GitHub Actions**.
 
-A proposta deste projeto é servir como ambiente de aprendizado prático, modular e escalável, com ênfase em boas práticas de engenharia de software.
+Este projeto serve como um ambiente de aprendizado prático, modular e escalável, com ênfase em boas práticas como **Clean Code**, **SOLID** e **Design Orientado a Domínio**.
 
-## Arquitetura e Estrutura
+## Estrutura do Projeto
 
-- Microserviços modulares para cada domínio (produto, pedido, inventário etc.)
-- Spring Boot com estrutura multi-módulo via Maven
-- Contêineres Docker individuais para facilitar o desenvolvimento local
-- Integração opcional com front-end (a ser desenvolvida posteriormente)
-- Database per service: cada microserviço gerencia sua própria base de dados.
+   ```  
+springshop-ecommerce/  
+├── services/  
+│   ├── gateway-service/  
+│   ├── inventory-service/  
+│   ├── notification-service/  
+│   ├── order-service/  
+│   ├── payment-service/  
+│   ├── product-service/  
+│   └── user-service/  
+├── prometheus/  
+├── .github/  
+├── .mvn/  
+├── docker-compose.yml  
+├── pom.xml  
+└── README.md  
 
-```bash
-springshop-ecommerce/
-├── services/
-│   ├── gateway-service/
-│   ├── inventory-service/
-│   ├── notification-service/
-│   ├── order-service/
-│   ├── payment-service/
-│   ├── product-service/
-│   └── user-service/
-├── prometheus/
-├── .github/
-├── .mvn/
-├── docker-compose.yml
-├── pom.xml
-└── README.md
-```
-
-## Serviços Principais
-
-- **Serviço de Gateway**: segurança do sistema e roteamento das requisições
-- **Serviço de Pedidos**: processamento e rastreamento de pedidos
-- **Serviço de Produtos**: gerenciamento de catálogo de produtos
-- **Serviço de Inventário**: controle de estoque
-- **Serviço de Pagamento**: integração com gateways de pagamento
-- **Serviço de Notificações**: envio de e-mails e mensagens
-- **Serviço de Usuários**: cadastro, autenticação e gerenciamento de perfis
-
-## Persistência, Mensageria e Observabilidade
-
-Cada serviço possui seu próprio banco de dados, garantindo isolamento e escalabilidade:
-
-- Serviço de Produtos: PostgreSQL para armazenar dados estruturados dos produtos.
-- Serviço de Pedidos: PostgreSQL para dados transacionais dos pedidos.
-- Serviço de Inventário: MongoDB para dados não estruturados do estoque.
-- Serviço de Usuários: PostgreSQL para informações de usuário.
-- Serviço de Notificações: MongoDB para documentos de e-mails e mensagens.
-
-Todos os serviços utilizam Redis para caching.
-
-Mensageria entre serviços que requerem comunicação assíncrona é feita com RabbitMQ.
-
-Para observabilidade, todos os serviços estão integrados com Prometheus e Grafana:
-
-- Prometheus: coleta métricas de desempenho via endpoints `actuator/prometheus`, incluindo CPU, memória, latência, uso de threads e outras métricas de aplicação.
-- Grafana: dashboards visuais para monitoramento do sistema.
+- Cada microserviço é um módulo Maven independente, empacotado com Docker.  
+- Todos os serviços seguem o princípio de **Database per Service**, com diferentes tecnologias de persistência.  
+- Um `docker-compose.yml` orquestra os serviços para execução local.  
+   ```
 
 ## Tecnologias Utilizadas
 
-- **Linguagem:** Java 17
-- **Frameworks:** Spring Boot/Web/Cloud/Security e JPA
-- **Build Tool:** Maven
-- **Banco de Dados:** PostgreSQL, MongoDB
-- **Cache:** Redis
-- **Mensageria:** RabbitMQ
-- **Monitoramento:** Prometheus, Grafana
-- **Containerização:** Docker, Docker Compose
-- **CI/CD (em desenvolvimento):** GitHub Actions
+- **Linguagem:** Java 21  
+- **Frameworks:** Spring Boot, Spring Cloud, Spring Security, Spring JPA  
+- **Build Tool:** Maven (estrutura multimódulo)  
+- **Banco de Dados:** PostgreSQL, MongoDB  
+- **Mensageria:** RabbitMQ  
+- **Cache:** Redis  
+- **Observabilidade:** Prometheus, Grafana  
+- **Containerização:** Docker, Docker Compose  
+- **CI/CD:** GitHub Actions  
 
-## Como executar
+## Estrutura Multimódulo e Pipeline Inteligente
 
-Pré-requisitos
+### Maven Multimódulo e Docker
 
-- Java 17 ou superior
-- Docker e Docker Compose
-- Maven
+A estrutura multimódulo com Maven foi adotada para garantir **isolamento por domínio**, reuso de dependências comuns e modularidade no build. O desafio principal surgiu na **construção dos contêineres Docker**, pois:
+
+- Cada `Dockerfile` de um módulo precisa acessar o `pom.xml` pai, localizado na raiz do projeto.
+- Por padrão, o Docker não tem visibilidade fora do diretório atual durante o build.
+
+**Solução implementada:**
+
+- Os `Dockerfile`s foram ajustados para copiar o `pom.xml` pai explicitamente:
+
+   ```
+  COPY ../../pom.xml ../..  
+  COPY . .  
+   ```
+- A build é executada com o contexto na raiz do projeto:
+
+   ```
+  docker build -f services/product-service/Dockerfile .  
+   ```
+Com isso, o Maven consegue resolver corretamente as dependências herdadas, e os builds continuam isolados por módulo.
+
+### CI/CD Dinâmico com GitHub Actions
+
+Um desafio ainda maior foi tornar a **integração contínua escalável**. Um pipeline único recompilando todos os módulos a cada commit seria ineficiente. A solução foi criar um **workflow inteligente que detecta quais módulos foram alterados** e aciona apenas os jobs relevantes.
+
+**Principais estratégias:**
+
+- Um job inicial verifica os diretórios alterados com:
+
+   ``` 
+  git diff --name-only origin/main  
+   ```
+- O output é processado por uma action customizada que identifica quais módulos Maven foram impactados.
+- Cada job de build/test/deploy é ativado **condicionalmente**:
+
+   ```
+  if: contains(steps.changed_files.outputs.modules, 'product-service')  
+   ```
+   
+Isso reduziu o tempo de execução das pipelines e tornou o processo mais escalável e eficiente, com deploys direcionados por módulo.
+
+## 📦 Serviços Principais
+
+| Serviço                | Responsabilidade                                    | Banco de Dados |
+|------------------------|-----------------------------------------------------|----------------|
+| `gateway-service`      | Autenticação, segurança e roteamento                | —              |
+| `product-service`      | Catálogo e gerenciamento de produtos                | MongoDB        |
+| `order-service`        | Processamento e rastreamento de pedidos             | PostgreSQL     |
+| `inventory-service`    | Controle de estoque e sincronização de quantidade   | PostgreSQL     |
+| `payment-service`      | Integração com gateway de pagamentos                | PostgreSQL     |
+| `notification-service` | Envio de e-mails e mensagens                        | MongoDB        |
+| `user-service`         | Registro, login e gerenciamento de perfis           | PostgreSQL     |
+
+Todos os serviços utilizam **Redis** para cache e **RabbitMQ** para comunicação assíncrona.
+
+## Observabilidade
+
+Cada microserviço expõe métricas via **Spring Boot Actuator**, coletadas pelo **Prometheus**. A visualização é feita através de **Grafana**, com dashboards personalizados para:
+
+- Latência por serviço  
+- Uso de CPU/memória  
+- Erros HTTP e exceções  
+- Quantidade de requisições  
+
+## Como Executar Localmente
+
+### Pré-requisitos
+
+- Java 21  
+- Maven  
+- Docker + Docker Compose  
+
+### Passos
 
 1. Clone o repositório:
 
-```bash
-git clone https://github.com/erisdll/springshop-ecommerce.git
-cd springshop-ecommerce
-```
+   CÓDIGO  
+   git clone https://github.com/erisdll/springshop-ecommerce.git  
+   cd springshop-ecommerce  
 
-2. Suba os serviços com Docker Compose:
-```bash
-docker-compose up
-```
+2. Suba os serviços:
 
-## Contribuição
-Contribuições são bem-vindas. Antes de enviar um pull request, abra uma issue para discutirmos possíveis mudanças.
+   ```
+   docker-compose up --build  
+   ```
+
+## Contribuições
+
+Contribuições são bem-vindas! Antes de abrir um PR, por favor abra uma issue para discutirmos as mudanças propostas. Feedbacks técnicos são encorajados.
+
+---
 
 ## Licença
-Este projeto está licenciado sob a Licença MIT.
+
+Este projeto está licenciado sob a **Licença MIT**. Consulte o arquivo `LICENSE` para mais detalhes.
