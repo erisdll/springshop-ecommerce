@@ -1,12 +1,4 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Springshop CI/CD
+name: Springshop CI/CD Pipeline
 
 on:
   push:
@@ -50,6 +42,16 @@ jobs:
             user:
               - 'services/user-service/**'
 
+      - name: Echo Changed Services
+        run: |
+          echo "Changed services:"
+          [[ "${{ steps.filter.outputs.gateway }}" == "true" ]] && echo "gateway-service"
+          [[ "${{ steps.filter.outputs.inventory }}" == "true" ]] && echo "inventory-service"
+          [[ "${{ steps.filter.outputs.notification }}" == "true" ]] && echo "notification-service"
+          [[ "${{ steps.filter.outputs.order }}" == "true" ]] && echo "order-service"
+          [[ "${{ steps.filter.outputs.payment }}" == "true" ]] && echo "payment-service"
+          [[ "${{ steps.filter.outputs.product }}" == "true" ]] && echo "product-service"
+          [[ "${{ steps.filter.outputs.user }}" == "true" ]] && echo "user-service"
 
   build-gateway:
     needs: detect-changes
@@ -58,6 +60,7 @@ jobs:
     with:
       service_name: gateway-service
     secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-inventory:
@@ -67,6 +70,7 @@ jobs:
     with:
       service_name: inventory-service
     secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-notification:
@@ -76,6 +80,7 @@ jobs:
     with:
       service_name: notification-service
     secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-order:
@@ -85,6 +90,7 @@ jobs:
     with:
       service_name: order-service
     secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-payment:
@@ -94,6 +100,7 @@ jobs:
     with:
       service_name: payment-service
     secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-product:
@@ -103,6 +110,7 @@ jobs:
     with:
       service_name: product-service
     secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-user:
@@ -112,4 +120,5 @@ jobs:
     with:
       service_name: user-service
     secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

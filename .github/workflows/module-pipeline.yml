@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for Microservice
+name: CI/CD Pipeline for ${{ inputs.service_name }}
 
 on:
   workflow_call:
@@ -6,9 +6,15 @@ on:
       service_name:
         required: true
         type: string
+    secrets:
+      DOCKERHUB_USER:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
 
 jobs:
-  ci-cd:
+
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,24 +27,24 @@ jobs:
           distribution: 'temurin'
           java-version: 21
 
-      - name: Build with Maven
-        run: mvn clean install -pl services/${{ inputs.service_name }} -am
+      - name: Build and Test with Maven
+        run: mvn clean verify -pl services/${{ inputs.service_name }} -am
 
-      - name: Docker Login
+      - name: Login to Docker Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build Docker Image
         run: |
           docker build -f services/${{ inputs.service_name }}/Dockerfile \
-          -t ${{ vars.DOCKERHUB_USERNAME }}/springshop-${{ inputs.service_name }}:latest \
+          -t ${{ secrets.DOCKERHUB_USER }}/springshop-${{ inputs.service_name }}:latest \
           .
 
       - name: Push Docker Image
         run: |
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/springshop-${{ inputs.service_name }}:latest
+          docker push ${{ secrets.DOCKERHUB_USER }}/springshop-${{ inputs.service_name }}:latest
 
       - name: Simulate Deploy
         run: echo "Deploying ${{ inputs.service_name }}..."
