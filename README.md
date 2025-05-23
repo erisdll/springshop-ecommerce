@@ -118,9 +118,10 @@ Cada microserviço expõe métricas via **Spring Boot Actuator**, coletadas pelo
 
 1. Clone o repositório:
 
-   CÓDIGO  
+   ```
    git clone https://github.com/erisdll/springshop-ecommerce.git  
-   cd springshop-ecommerce  
+   cd springshop-ecommerce
+   ```
 
 2. Suba os serviços:
 
@@ -131,8 +132,6 @@ Cada microserviço expõe métricas via **Spring Boot Actuator**, coletadas pelo
 ## Contribuições
 
 Contribuições são bem-vindas! Antes de abrir um PR, por favor abra uma issue para discutirmos as mudanças propostas. Feedbacks técnicos são encorajados.
-
----
 
 ## Licença
 
