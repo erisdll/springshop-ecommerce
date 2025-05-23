@@ -21,7 +21,7 @@ COPY services/gateway-service services/gateway-service
 
 RUN chmod +x mvnw
 
-# Baixa dependências e compila o projeto
+# Baixa dependências e compila
 RUN mvn -f services/gateway-service/pom.xml clean package -DskipTests dependency:go-offline
 
 # == STAGE 2 - RUNTIME =================================================================================================

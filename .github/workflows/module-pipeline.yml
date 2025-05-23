@@ -36,9 +36,9 @@ jobs:
           -t ${{ secrets.DOCKER_USERNAME }}/springshop-${{ inputs.service_name }}:latest \
           .
 
-          - name: Push Docker Image
-            run: |
-              docker push ${{ secrets.DOCKER_USERNAME }}/springshop-${{ inputs.service_name }}:latest
+      - name: Push Docker Image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/springshop-${{ inputs.service_name }}:latest
 
-          - name: Simulate Deploy
-            run: echo "Deploying ${{ inputs.service_name }}..."
+      - name: Simulate Deploy
+        run: echo "Deploying ${{ inputs.service_name }}..."
