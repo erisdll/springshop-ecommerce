@@ -4,30 +4,32 @@
 # (i.e., the folder that contains the pom.xml file).
 # ============== WARNING!! ============================ WARNING!! ============================ WARNING!! ===============
 
-# ===========================
-# STAGE 1 - BUILD
-# ===========================
+# == STAGE 1 - BUILD ===================================================================================================
 FROM maven:3-eclipse-temurin-21 AS builder
 
 WORKDIR /build
 
+#copia o mvnw da raiz do projeto
+COPY mvnw .
+#copia a pasta .mvn da raiz do projeto
+COPY .mvn .mvn
+#copia o pom.xml da raiz do projeto
 COPY pom.xml .
-COPY common/common-domain ./common/common-domain
-COPY common/common-security ./common/common-security
-COPY services/inventory-service ./services/inventory-service
+#copia o modulo
+COPY services/inventory-service services/inventory-service
 
-RUN mvn -f services/inventory-service/pom.xml dependency:go-offline
+#permite a execução do mvnw
+RUN chmod +x mvnw
+# Baixa dependências e compila o projeto
+RUN mvn -f services/inventory-service/pom.xml clean package -DskipTests dependency:go-offline
 
-RUN mvn -f services/inventory-service/pom.xml clean package -DskipTests
-
-# ===========================
-# STAGE 2 - RUNTIME
-# ===========================
+# == STAGE 2 - RUNTIME =================================================================================================
 FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
+#copia o jar gerado na etapa de build
 COPY --from=builder /build/services/inventory-service/target/*.jar app.jar
-
 EXPOSE 8080
+# Define o ponto de entrada do container
 ENTRYPOINT ["java", "-jar", "app.jar"]

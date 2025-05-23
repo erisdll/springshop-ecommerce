@@ -1,34 +1,35 @@
 # ============== WARNING!! ============================ WARNING!! ============================ WARNING!! ===============
-# TO BE ABLE TO BUILD THIS IMAGE, YOU MUST DO IT FROM THE CONTEXT OF THE ROOT PROJECT
-# IF RUNNING IN INTELLJ IDEA, MAKE SURE EDIT THE RUN CONFIGURATION TO USE THE ROOT PROJECT AS CONTEXT
+# TO BE ABLE TO BUILD THIS IMAGE, YOU MUST SET THE ROOT OF THE MAIN PROJECT AS CONTEXT.
+# IF RUNNING FROM IDE, EDIT THE RUN CONFIGURATION TO SET THE ROOT OF THE MAIN PROJECT AS CONTEXT.
 # (i.e., the folder that contains the pom.xml file).
 # ============== WARNING!! ============================ WARNING!! ============================ WARNING!! ===============
-
 
 # == STAGE 1 - BUILD ===================================================================================================
 FROM maven:3-eclipse-temurin-21 AS builder
 
 WORKDIR /build
 
-# Copia o wrapper e configuração Maven
+#copia o mvnw da raiz do projeto
 COPY mvnw .
+#copia a pasta .mvn da raiz do projeto
 COPY .mvn .mvn
+#copia o pom.xml da raiz do projeto
 COPY pom.xml .
-COPY services/product-service/pom.xml services/product-service/pom.xml
+#copia o modulo
 COPY services/product-service services/product-service
 
+#permite a execução do mvnw
 RUN chmod +x mvnw
-
-# Baixa dependências e compila usando o wrapper
-RUN mvn -f services/product-service/pom.xml dependency:go-offline
-RUN mvn -f services/product-service/pom.xml clean package -DskipTests
+# Baixa dependências e compila o projeto
+RUN mvn -f services/product-service/pom.xml clean package -DskipTests dependency:go-offline
 
 # == STAGE 2 - RUNTIME =================================================================================================
 FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
+#copia o jar gerado na etapa de build
 COPY --from=builder /build/services/product-service/target/*.jar app.jar
-
 EXPOSE 8080
+# Define o ponto de entrada do container
 ENTRYPOINT ["java", "-jar", "app.jar"]
