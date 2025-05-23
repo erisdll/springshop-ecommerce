@@ -1,4 +1,4 @@
-name: Springshop CI/CD Pipeline
+name: Springshop CI/CD
 
 on:
   push:
@@ -41,17 +41,6 @@ jobs:
               - 'services/product-service/**'
             user:
               - 'services/user-service/**'
-
-      - name: Show Changed Services
-        run: |
-          echo "Changed services:"
-          [[ "${{ steps.filter.outputs.gateway }}" == "true" ]] && echo "gateway-service"
-          [[ "${{ steps.filter.outputs.inventory }}" == "true" ]] && echo "inventory-service"
-          [[ "${{ steps.filter.outputs.notification }}" == "true" ]] && echo "notification-service"
-          [[ "${{ steps.filter.outputs.order }}" == "true" ]] && echo "order-service"
-          [[ "${{ steps.filter.outputs.payment }}" == "true" ]] && echo "payment-service"
-          [[ "${{ steps.filter.outputs.product }}" == "true" ]] && echo "product-service"
-          [[ "${{ steps.filter.outputs.user }}" == "true" ]] && echo "user-service"
 
   build-gateway:
     needs: detect-changes
