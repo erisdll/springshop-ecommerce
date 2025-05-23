@@ -57,6 +57,8 @@ jobs:
     uses: ./.github/workflows/module-pipeline.yml
     with:
       service_name: gateway-service
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-inventory:
     needs: detect-changes
@@ -64,6 +66,8 @@ jobs:
     uses: ./.github/workflows/module-pipeline.yml
     with:
       service_name: inventory-service
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-notification:
     needs: detect-changes
@@ -71,6 +75,8 @@ jobs:
     uses: ./.github/workflows/module-pipeline.yml
     with:
       service_name: notification-service
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-order:
     needs: detect-changes
@@ -78,6 +84,8 @@ jobs:
     uses: ./.github/workflows/module-pipeline.yml
     with:
       service_name: order-service
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-payment:
     needs: detect-changes
@@ -85,6 +93,8 @@ jobs:
     uses: ./.github/workflows/module-pipeline.yml
     with:
       service_name: payment-service
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-product:
     needs: detect-changes
@@ -92,6 +102,8 @@ jobs:
     uses: ./.github/workflows/module-pipeline.yml
     with:
       service_name: product-service
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-user:
     needs: detect-changes
@@ -99,3 +111,5 @@ jobs:
     uses: ./.github/workflows/module-pipeline.yml
     with:
       service_name: user-service
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
