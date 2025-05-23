@@ -15,12 +15,11 @@ COPY mvnw .
 COPY .mvn .mvn
 #copia o pom.xml da raiz do projeto
 COPY pom.xml .
-
 #copia o modulo
 COPY services/gateway-service services/gateway-service
 
+#permite a execução do mvnw
 RUN chmod +x mvnw
-
 # Baixa dependências e compila o projeto
 RUN mvn -f services/gateway-service/pom.xml clean package -DskipTests dependency:go-offline
 
@@ -29,7 +28,8 @@ FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
+#copia o jar gerado na etapa de build
 COPY --from=builder /build/services/gateway-service/target/*.jar app.jar
-
 EXPOSE 8080
+# Define o ponto de entrada do container
 ENTRYPOINT ["java", "-jar", "app.jar"]
