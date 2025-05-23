@@ -53,16 +53,72 @@ jobs:
           [[ "${{ steps.filter.outputs.product }}" == "true" ]] && echo "product-service"
           [[ "${{ steps.filter.outputs.user }}" == "true" ]] && echo "user-service"
 
-  build-services:
+  build-gateway:
     needs: detect-changes
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [gateway, inventory, notification, order, payment, product, user]
-    if: ${{ needs.detect-changes.outputs[matrix.service] == 'true' }}
+    if: needs.detect-changes.outputs.gateway == 'true'
     uses: ./.github/workflows/module-pipeline.yml
     with:
-      service_name: ${{ matrix.service }}-service
+      service_name: gateway-service
+    secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-inventory:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.inventory == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: inventory-service
+    secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-notification:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.notification == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: notification-service
+    secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-order:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.order == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: order-service
+    secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-payment:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.payment == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: payment-service
+    secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-product:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.product == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: product-service
+    secrets:
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-user:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.user == 'true'
+    uses: ./.github/workflows/module-pipeline.yml
+    with:
+      service_name: user-service
     secrets:
       DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
