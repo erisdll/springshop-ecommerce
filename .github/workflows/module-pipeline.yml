@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for ${{ inputs.service_name }}
+name: CI/CD Pipeline for individual Services
 
 on:
   workflow_call:
