@@ -1,11 +1,10 @@
 # SpringShop eCommerce
 
-**SpringShop eCommerce** é um projeto de estudo que simula uma plataforma moderna de e-commerce construída com **Java 17**, **Spring Boot** e **microsserviços**. O objetivo é aplicar práticas avançadas de engenharia de software, com foco em arquitetura distribuída, mensageria assíncrona, cache distribuído, observabilidade e pipelines de CI/CD, utilizando **Docker** e **GitHub Actions**.
+**SpringShop eCommerce** é um projeto de estudo que simula uma plataforma moderna de e-commerce construída com **Java 21**, **Spring Boot** e **microsserviços**. O objetivo é aplicar práticas avançadas de engenharia de software, com foco em arquitetura distribuída, mensageria assíncrona, cache distribuído, observabilidade e pipelines de CI/CD, utilizando **Docker** e **GitHub Actions**.
 
 Este projeto serve como um ambiente de aprendizado prático, modular e escalável, com ênfase em boas práticas como **Clean Code**, **SOLID** e **Design Orientado a Domínio**.
 
 ## Estrutura do Projeto
-
    ```  
 springshop-ecommerce/  
 ├── services/  
