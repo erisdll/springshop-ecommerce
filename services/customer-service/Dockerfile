@@ -9,18 +9,12 @@ FROM maven:3-eclipse-temurin-21 AS builder
 
 WORKDIR /build
 
-#copia o mvnw da raiz do projeto
 COPY mvnw .
-#copia a pasta .mvn da raiz do projeto
 COPY .mvn .mvn
-#copia o pom.xml da raiz do projeto
 COPY pom.xml .
-#copia o modulo
 COPY services/user-service services/user-service
 
-#permite a execução do mvnw
 RUN chmod +x mvnw
-# Baixa dependências e compila o projeto
 RUN mvn -f services/user-service/pom.xml clean package -DskipTests dependency:go-offline
 
 # == STAGE 2 - RUNTIME =================================================================================================
@@ -28,8 +22,6 @@ FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
-#copia o jar gerado na etapa de build
 COPY --from=builder /build/services/user-service/target/*.jar app.jar
 EXPOSE 8080
-# Define o ponto de entrada do container
 ENTRYPOINT ["java", "-jar", "app.jar"]
