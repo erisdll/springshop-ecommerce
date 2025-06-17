@@ -1,4 +1,4 @@
-package com.springshop.user;
+package com.erika.springshop.customer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
