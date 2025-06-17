@@ -6,6 +6,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Identificação do projeto pai (monorepo) -->
     <groupId>com.erika.springshop</groupId>
     <artifactId>springshop-ecommerce</artifactId>
     <version>1.0.0-SNAPSHOT</version>
@@ -14,28 +15,33 @@
     <name>SpringShop E-Commerce</name>
     <description>Monorepo for SpringShop E-Commerce microservices</description>
 
+    <!-- Módulos filhos representando microsserviços -->
     <modules>
-        <!-- Microservices -->
         <module>services/gateway-service</module>
+        <module>services/auth-service</module>
+        <module>services/customer-service</module>
         <module>services/inventory-service</module>
         <module>services/notification-service</module>
         <module>services/order-service</module>
         <module>services/payment-service</module>
         <module>services/product-service</module>
-        <module>services/user-service</module>
     </modules>
 
+    <!-- Propriedades centrais para versões e configurações comuns -->
     <properties>
         <java.version>21</java.version>
         <spring.boot.version>3.4.5</spring.boot.version>
+        <spring.cloud.version>2024.0.1</spring.cloud.version>
         <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
+    <!-- Gerenciamento centralizado de versões para dependências e plugins -->
     <dependencyManagement>
         <dependencies>
-            <!-- Spring Boot BOM -->
+
+            <!-- Spring Boot BOM para garantir versões compatíveis no ecossistema Spring -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -44,12 +50,42 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- external dependencies -->
+            <!-- Spring Cloud BOM para alinhar versões da stack cloud com Spring Boot -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring.cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- JSON Web Token (JJWT) para autenticação e segurança baseada em tokens JWT -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>0.11.5</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>0.11.5</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>0.11.5</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <!-- Spring Cloud Gateway para roteamento e API Gateway em microsserviços -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-gateway</artifactId>
                 <version>4.2.1</version>
             </dependency>
+
+            <!-- OpenAPI e Swagger via springdoc para documentação automática da API REST -->
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -60,43 +96,74 @@
                 <artifactId>springdoc-openapi-security</artifactId>
                 <version>1.8.0</version>
             </dependency>
+
+            <!-- Micrometer com registry Prometheus para monitoramento e métricas -->
             <dependency>
                 <groupId>io.micrometer</groupId>
                 <artifactId>micrometer-registry-prometheus</artifactId>
                 <version>1.14.6</version>
             </dependency>
+
+            <!-- Driver PostgreSQL para persistência de dados -->
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>42.7.5</version>
             </dependency>
+
+            <!-- Lombok para reduzir boilerplate e melhorar legibilidade -->
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>1.18.38</version>
             </dependency>
+
+            <!-- MapStruct para geração automática de mapeadores DTO-Entity -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>1.5.5.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>1.5.5.Final</version>
+                <scope>provided</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
     <build>
         <pluginManagement>
             <plugins>
+                <!-- Configuração do plugin de compilação para Java 21 -->
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven.compiler.plugin.version}</version>
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <parameters>true</parameters> <!-- Para refletir nomes de parâmetros em tempo de execução -->
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
 
         <plugins>
+            <!-- Plugin do Spring Boot para empacotamento executável -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal> <!-- Gera o fat jar executável -->
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
