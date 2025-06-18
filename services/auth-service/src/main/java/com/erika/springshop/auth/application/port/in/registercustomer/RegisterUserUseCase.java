@@ -1,5 +1,7 @@
 package com.erika.springshop.auth.application.port.in.registercustomer;
 
+import com.erika.springshop.auth.domain.dto.SignUpRequestDto;
+
 public interface RegisterUserUseCase {
     void execute(SignUpRequestDto signUpRequestDto) ;
 }

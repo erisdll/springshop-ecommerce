@@ -42,7 +42,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Feign para comunicação inter-serviços -->
+        <!-- Feign para comunicação interserviços -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
