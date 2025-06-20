@@ -1,6 +1,6 @@
 package com.erika.springshop.auth.application.port.in.registercustomer;
 
-import com.erika.springshop.auth.domain.dto.AuthenticationRequestDto;
+import com.erika.springshop.auth.interfaces.dto.AuthRequestDto;
 
 public interface AuthenticateUserUseCase {
-    void execute(AuthenticationRequestDto authenticationRequestDto);}
+    void execute(AuthRequestDto authRequestDto);}
