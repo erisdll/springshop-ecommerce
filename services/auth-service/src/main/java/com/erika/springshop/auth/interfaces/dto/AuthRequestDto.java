@@ -1,7 +1,7 @@
 package com.erika.springshop.auth.interfaces.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
-public record AuthRequestDto(@NotNull String username,
-                             @NotNull String password) {
+public record AuthRequestDto(@NotBlank String username,
+                             @NotBlank String password) {
 }
