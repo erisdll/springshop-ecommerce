@@ -1,8 +1,6 @@
 package com.erika.springshop.auth.infrastructure.security;
 
 import com.erika.springshop.auth.infrastructure.security.jwt.JwtAuthenticationFilter;
-import com.erika.springshop.auth.infrastructure.security.oauth.CustomOAuth2UserService;
-import com.erika.springshop.auth.infrastructure.security.oauth.Oauth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,31 +24,25 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final Oauth2SuccessHandler oAuth2SuccessHandler;
 
-
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests( auth -> auth
-                        .requestMatchers("/api/auth/**",  "/oauth2/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "api/admin/**").hasRole("ADMIN")
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(daoAuthenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(user -> user.userService(customOAuth2UserService))
-                        .successHandler(oAuth2SuccessHandler)
-                );
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager( AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
