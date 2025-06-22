@@ -1,50 +1,79 @@
 package com.erika.springshop.auth.domain.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.validation.constraints.Email;
+import lombok.*;
 
-import java.util.Collection;
-import java.util.List;
+import java.time.Instant;
 
-@Entity
-@Table(name = "users")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class User implements UserDetails {
+@Getter @Setter @Builder
+@Entity @Table(name = "users")
+@NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false, unique = true)
     private String username;
 
-    @Column
+    @Email
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
     private String password;
 
-    @Column
-    private String role;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role = Role.ROLE_USER;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() { return List.of(new SimpleGrantedAuthority(role)); }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "provider")
+    private AuthProvider authProvider;
 
-    @Override
-    public boolean isAccountNonExpired() { return UserDetails.super.isAccountNonExpired(); }
+    @Column(name = "provider_id")
+    private String providerId;
 
-    @Override
-    public boolean isAccountNonLocked() { return UserDetails.super.isAccountNonLocked(); }
+    @Column(nullable = false)
+    private boolean enabled = true;
 
-    @Override
-    public boolean isCredentialsNonExpired() { return UserDetails.super.isCredentialsNonExpired(); }
+    @Column(nullable = false)
+    private boolean accountNonLocked = true;
 
-    @Override
-    public boolean isEnabled() { return UserDetails.super.isEnabled(); }
+    @Column(nullable = false)
+    private boolean credentialsNonExpired = true;
+
+    @Column(nullable = false)
+    private boolean accountNonExpired = true;
+
+    @Column(updatable = false)
+    private Instant createdAt;
+
+    private Instant updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = Instant.now();
+        updatedAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = Instant.now();
+    }
+
+    public static User createStandardUser(String username, String email, String encodedPassword) {
+        return User.builder()
+                .username(username)
+                .email(email)
+                .password(encodedPassword)
+                .role(Role.ROLE_USER)
+                .enabled(true)
+                .accountNonLocked(true)
+                .credentialsNonExpired(true)
+                .accountNonExpired(true)
+                .build();
+    }
 }
