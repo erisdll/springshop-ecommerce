@@ -1,5 +1,9 @@
 package com.erika.springshop.auth.interfaces.dto;
 
-public record AuthResponseDto(String token,
-                              String username
+public record AuthResponseDto(
+        Long id,
+        String username,
+        String email,
+        String role,
+        String token
 ) {}
