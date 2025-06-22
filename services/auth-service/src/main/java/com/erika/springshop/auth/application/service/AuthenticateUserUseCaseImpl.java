@@ -35,7 +35,7 @@ public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
         String token = jwtService.generateToken(userPrincipal);
 
         return new AuthResponseDto(
-                userPrincipal.getId().longValue(),
+                userPrincipal.getId(),
                 userPrincipal.getUsername(),
                 userPrincipal.getEmail(),
                 userPrincipal.getAuthorities().iterator().next().getAuthority(),
