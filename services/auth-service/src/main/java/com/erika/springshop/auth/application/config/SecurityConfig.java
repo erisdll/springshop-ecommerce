@@ -1,4 +1,4 @@
-package com.erika.springshop.auth.infrastructure.security;
+package com.erika.springshop.auth.application.config;
 
 import com.erika.springshop.auth.infrastructure.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;

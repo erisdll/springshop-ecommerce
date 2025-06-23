@@ -1,79 +1,56 @@
 package com.erika.springshop.auth.domain.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.UUID;
 
-@Getter @Setter @Builder
-@Entity @Table(name = "users")
-@NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
+@Getter @Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
-    @Column(nullable = false, unique = true)
     private String username;
+    private Email email;
+    private Password password;
 
-    @Email
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @Column(nullable = false)
-    private String password;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private Role role = Role.ROLE_USER;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "provider")
+    private Role role;
     private AuthProvider authProvider;
-
-    @Column(name = "provider_id")
     private String providerId;
 
-    @Column(nullable = false)
-    private boolean enabled = true;
+    private boolean isEnabled;
+    private boolean isAccountNonLocked;
+    private boolean isAccountNonExpired;
+    private boolean isCredentialsNonExpired;
 
-    @Column(nullable = false)
-    private boolean accountNonLocked = true;
-
-    @Column(nullable = false)
-    private boolean credentialsNonExpired = true;
-
-    @Column(nullable = false)
-    private boolean accountNonExpired = true;
-
-    @Column(updatable = false)
     private Instant createdAt;
-
     private Instant updatedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
+    public boolean isLocalUser() {
+        return AuthProvider.LOCAL.equals(this.authProvider);
+    }
+
+    public boolean isActive() {
+        return this.isEnabled && this.isAccountNonLocked && this.isAccountNonExpired && this.isCredentialsNonExpired;
+    }
+
+    public boolean verifyPassword(String rawPassword, PasswordEncoder encoder) {
+        return password.matches(rawPassword, encoder);
+    }
+
+    public void updateTimestamps() {
         updatedAt = Instant.now();
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
+    public User createStandardUser(String username, Email email, Password password) {
 
-    public static User createStandardUser(String username, String email, String encodedPassword) {
-        return User.builder()
-                .username(username)
-                .email(email)
-                .password(encodedPassword)
-                .role(Role.ROLE_USER)
-                .enabled(true)
-                .accountNonLocked(true)
-                .credentialsNonExpired(true)
-                .accountNonExpired(true)
-                .build();
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.role = Role.ROLE_USER;
+        this.authProvider = AuthProvider.LOCAL;
+        return this;
     }
 }

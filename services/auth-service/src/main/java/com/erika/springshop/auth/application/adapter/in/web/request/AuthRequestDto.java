@@ -1,4 +1,4 @@
-package com.erika.springshop.auth.interfaces.dto;
+package com.erika.springshop.auth.application.adapter.in.web.request;
 
 import jakarta.validation.constraints.NotBlank;
 

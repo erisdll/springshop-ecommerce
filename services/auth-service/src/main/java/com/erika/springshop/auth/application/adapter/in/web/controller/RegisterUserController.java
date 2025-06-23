@@ -1,8 +1,8 @@
-package com.erika.springshop.auth.interfaces.controller;
+package com.erika.springshop.auth.application.adapter.in.web.controller;
 
-import com.erika.springshop.auth.application.port.in.registercustomer.RegisterUserUseCase;
-import com.erika.springshop.auth.interfaces.dto.SignUpRequestDto;
-import com.erika.springshop.auth.interfaces.dto.SignUpResponseDto;
+import com.erika.springshop.auth.domain.port.in.RegisterUseCase;
+import com.erika.springshop.auth.application.adapter.in.web.request.SignUpRequestDto;
+import com.erika.springshop.auth.application.adapter.in.web.response.SignUpResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class RegisterUserController {
 
-    private final RegisterUserUseCase registerUserUseCase;
+    private final RegisterUseCase registerUseCase;
 
     @PostMapping
     public ResponseEntity<SignUpResponseDto> registerUser(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
-        SignUpResponseDto signUpResponseDto = registerUserUseCase.execute(signUpRequestDto);
+        SignUpResponseDto signUpResponseDto = registerUseCase.execute(signUpRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(signUpResponseDto);
     }
 }
